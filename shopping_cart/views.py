@@ -1,6 +1,6 @@
 from django.shortcuts import render,HttpResponseRedirect, reverse
 
-from product.models import Product
+from product.models import Product, Variaton
 from .models import Cart, CartItem
 
 # Create your views here.
@@ -10,14 +10,34 @@ def cart(request):
     try:
         # if cart id exist grab it
         the_id = request.session['cart_id']
+    
     except:
         the_id = None
-
+    
     if the_id:
+    
         cart = Cart.objects.get(id=the_id)
+        new_total = 0.00
+        nav_total = 0
+        # cartitem_set looks for the foreign key relation in CartItem
+        for item in cart.cartitem_set.all():
+            line_total = float(item.product.price) * item.quantity
+            new_total += line_total
+            nav_total += item.quantity
+        
+        # get the total amount of items in cart and we will use this 
+        # to display next to cart navbar the total amount in cart
+        request.session['items_total'] = nav_total
+        # request.session['items_total'] = cart.cartitem_set.count()
+        
+
+        cart.total = new_total
+        cart.save()
+
         context = {
             'cart': cart,
         }
+
     else:
         empty_message = "Your cart is empty!"
         context = {
@@ -29,24 +49,26 @@ def cart(request):
     return render(request, 'cart/cart.html', context)
 
 
+def remove_from_cart(request, pk):
+    try:
+        # if cart id exist grab it
+        the_id = request.session['cart_id']
+        cart = Cart.objects.get(id=the_id)
+    except:
+        return HttpResponseRedirect(reverse('cart'))
+    
+    cartitem = CartItem.objects.get(id=pk)
+    # cartitem.delete()
+    cartitem.cart = None
+    cartitem.save()
+    #send success message
+    return HttpResponseRedirect(reverse('cart'))
+
+
 def add_to_cart(request, pk):
     # cart will expire after 3600 seconds(1hr) but in administration(models)
     # it still exists and user will be logged out
     request.session.set_expiry(3600)
-
-    try:
-        qty = request.GET.get('qty')
-        update_qty = True
-    except:
-        qty = None
-        update_qty = False
-
-    try:
-        attr = request.GET.get('attr')
-    except:
-        attr = None
-        
-    print(attr)
 
     try:
         # if cart id exist grab it
@@ -60,7 +82,6 @@ def add_to_cart(request, pk):
 
     # use the cart id from above
     cart = Cart.objects.get(id=the_id)
-    
     try:
         # grab product id
         product = Product.objects.get(id=pk)
@@ -69,36 +90,39 @@ def add_to_cart(request, pk):
     except:
         pass
 
-    # add items to the cart
-    cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
 
-    if update_qty and qty:
-        if int(qty) == 0:
-            cart_item.delete()
-        else:
+
+    product_var = [] #product variation
+    if request.method == 'POST':
+        qty = request.POST['qty']
+        # size = request.POST['size']
+        # color = request.POST['color']
+
+        # print(qty)
+        
+        if int(qty) >= 1:
+        
+            for item in request.POST:
+                key = item
+                val = request.POST[key]
+            
+                try:
+                    v = Variaton.objects.get(product=product, category__iexact=key, title__iexact=val)
+                    product_var.append(v)
+                except:
+                    pass
+
+
+            # add items to the cart
+            cart_item = CartItem.objects.create(cart=cart, product=product)
+
+            if len(product_var) > 0:
+                cart_item.variations.add(*product_var) #for item in product_var:
+                                                    #    cart_item.variations.add(item)
             cart_item.quantity = qty
             cart_item.save()
-    else:
-        pass
+            # success message
 
-    '''
-    if not cart_item in cart.items.all():
-        cart.items.add(cart_item)
-    else:
-        cart.items.remove(cart_item)
-    '''
-
-    new_total = 0.00
-    # cartitem_set looks for the foreign key relation in CartItem
-    for item in cart.cartitem_set.all():
-        line_total = float(item.product.price) * item.quantity
-        new_total += line_total
-    
-    # get the total amount of items in cart and we will use this 
-    # to display next to cart navbar the total amount in cart
-    request.session['items_total'] = cart.cartitem_set.count()
-    
-    cart.total = new_total
-    cart.save()
-
+            return HttpResponseRedirect(reverse('cart'))
+    # error message    
     return HttpResponseRedirect(reverse('cart'))

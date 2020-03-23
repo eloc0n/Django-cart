@@ -14,11 +14,51 @@
                     <h5 class="card-title">{{ product.title }}</h5>
                     <p class="card-text">{{ product.description }}
                     </p>
-                    <a href="{% url 'add_to_cart' product.id %}?qty=10" class="btn btn-primary">Add to cart</a>
-                    <form class="form pull-right" method="GET" action="{% url 'add_to_cart' product.id %}">
-                        <input name="qty" type="number" value="1">
-                        <input name="attr" type="text" placeholder="color" value="">
-                        <input type="submit" value="Add to cart">
+                    <!-- <a href="{% url 'add_to_cart' product.id %}?qty=10" class="btn btn-primary">Add to cart</a> -->
+                    <form class="form pull-right" method="POST" action="{% url 'add_to_cart' product.id %}">
+                        {% csrf_token %}
+                        <!-- <div class="form-check">
+                            <input class="form-check-input" name="attr" type="checkbox" value="blue" id="defaultCheck1">
+                            <label class="form-check-label" for="defaultCheck1">
+                                Blue
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" name="attr" type="checkbox" value="green" id="defaultCheck2" >
+                            <label class="form-check-label" for="defaultCheck2">
+                                Green
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" name="attr" type="checkbox" value="pink" id="defaultCheck3" >
+                            <label class="form-check-label" for="defaultCheck3">
+                                Pink
+                            </label>
+                        </div> -->
+
+                        {% if product.variaton_set.all %}
+
+                            {% if product.variaton_set.sizes %}
+                            <select class="custom-select" name="size">
+                                {% for item in product.variaton_set.sizes %}
+                                    <option value="{{ item.title|lower }}">{{ item.title|capfirst }}</option>
+                                {% endfor %}
+                            </select>
+                            {% endif %}
+
+                            {% if product.variaton_set.colors %}
+                            <select class="custom-select" name="color">
+                                {% for item in product.variaton_set.colors %}
+                                    <option value="{{ item.title|lower }}">{{ item.title|capfirst }}</option>
+                                {% endfor %}
+                            </select>
+                            {% endif %}
+
+                        {% endif %}
+                                            
+                        <input class="form-control" name="qty" type="number" value="1" min="1" >
+                        <!-- <input class="form-control" name="attr" type="text" placeholder="color" value=""> -->
+                        <input class="btn btn-dark btn-block" type="submit" value="Add to cart">
                     </form>
                 </div>
             </div>

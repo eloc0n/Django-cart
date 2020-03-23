@@ -15,12 +15,14 @@
             <th>Item</th>
             <th>Price</th>
             <th>Qty</th>
+            <th>Notes</th>
             <th></th>
         </thead>
         <tfoot>
             <tr>
                 <td></td>
                 <td>Total: {{ cart.total }}</td>
+                <td></td>
                 <td></td>
                 <td></td>
             </tr>
@@ -30,6 +32,16 @@
             <tr>
                 <td>
                     {{ item.product }}
+                    {% if item.variations.all %}
+                        <ul>
+                            {% for variation in item.variations.all %}
+                                <li>
+                                    {{ variation.category }} :
+                                    {{ variation.title }}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
                 </td>
                 <td>
                     {{ item.product.price }}
@@ -38,7 +50,10 @@
                     {{ item.quantity }}
                 </td>
                 <td>
-                    <a href="{% url 'add_to_cart' item.product.id %}?qty=0">Remove</a>
+                    {{ item.notes }}
+                </td>
+                <td>
+                    <a href="{% url 'remove_from_cart' item.id %}">Remove</a>
                 </td>
                 
             </tr>
