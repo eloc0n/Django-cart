@@ -1,30 +1,44 @@
-import time
+#import time
 
 from django.shortcuts import render, HttpResponseRedirect, reverse
-
+from django.contrib.auth.decorators import login_required
 
 from .models import Order
 from shopping_cart.models import Cart
-
+from .utils import id_generator
 # Create your views here.
-def checkout(request):
 
+def orders(request):
+
+    context = {
+
+    }
+
+    return render(request, 'orders/user.html', context)
+
+
+@login_required # require user login
+def checkout(request):
     try:
-        # if cart id exist grab it
-        the_id = request.session['cart_id']
+        the_id = request.session['cart_id'] # if cart id exist grab it
         cart = Cart.objects.get(id=the_id)
     except:
         the_id = None
         return HttpResponseRedirect(reverse('cart'))
     
-    new_order, created = Order.objects.get_or_create(cart=cart)
-    
-    if created:
-        # assign a user to the order
-        # assign an address
-        new_order.order_id = str(time.time())
+    try:
+        new_order = Order.objects.get(cart=cart)
+    except Order.DoesNotExist:
+        new_order = Order()
+        new_order.cart = cart
+        new_order.user = request.user   # assign a user to the order
+        new_order.order_id = id_generator()                                                         
         new_order.save()
-        
+    except:
+        # error message
+        return HttpResponseRedirect(reverse('cart'))
+
+    # assign an address    
     # run credit card
     if new_order.status == 'Finished':
         del request.session['cart_id']
@@ -38,6 +52,5 @@ def checkout(request):
         'empty_message':empty_message,
         # 'new_order':new_order,
     }
-
 
     return render(request, 'cart/cart.html', context)
