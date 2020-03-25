@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'product.apps.ProductConfig',
     'shopping_cart.apps.ShoppingCartConfig',
     'order.apps.OrderConfig',
+    'account.apps.AccountConfig',
 ]
 
 MIDDLEWARE = [
@@ -132,3 +133,9 @@ STATICFILES_DIRS = [
 # Media 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+
+
+
+# Stripe API key
+STRIPE_SECRET_KEY = 'sk_test_DoQAXpxfk3WXMHZdrvKqLvl8008Cl9vOrO'
+STRIPE_PUBLISHABLE_KEY = 'pk_test_mokC0tpYfGc2deFQiU4TT7CI009tyifPWS'
