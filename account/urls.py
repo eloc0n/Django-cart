@@ -2,5 +2,5 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    # path('checkout/', views.checkout, name='checkout'),
+    path('account/logout/', views.logout_view, name='logout'),
 ]
