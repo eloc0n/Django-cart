@@ -137,5 +137,5 @@ MEDIA_URL = '/media/'
 
 
 # Stripe API key
-STRIPE_SECRET_KEY = 'sk_test_DoQAXpxfk3WXMHZdrvKqLvl8008Cl9vOrO'
-STRIPE_PUBLISHABLE_KEY = 'pk_test_mokC0tpYfGc2deFQiU4TT7CI009tyifPWS'
+STRIPE_SECRET_KEY = 'sk_test_rNUpqlmmrCMhcVHCd2ahZfEm008vEIedj3'
+STRIPE_PUBLISHABLE_KEY = 'pk_test_HlXgb9BggsHF2O6h4bUrt0u700zDIEXvik'

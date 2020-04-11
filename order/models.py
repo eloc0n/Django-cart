@@ -1,11 +1,9 @@
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
 from django.db import models
 
 from shopping_cart.models import Cart
 
 # Create your models here.
-
-User = get_user_model()
 
 STATUS_CHOICES = (
     ('Started', 'Started'),
@@ -23,7 +21,7 @@ class Order(models.Model):
     # address **
     
     sub_total = models.DecimalField(default=10.99, max_digits=1000, decimal_places=2)
-    price_total = models.DecimalField(default=0.00, max_digits=1000, decimal_places=2)
+    tax_total = models.DecimalField(default=0.00, max_digits=1000, decimal_places=2)
     final_total = models.DecimalField(default=10.99, max_digits=1000, decimal_places=2)
     
     timestamp = models.DateTimeField(auto_now_add=True, auto_now=False)
@@ -31,3 +29,11 @@ class Order(models.Model):
 
     def __str__(self):
         return self.order_id
+
+    def get_final_amount(self):
+        instance = Order.objects.get(id=self.id)
+        instance.tax_total = 0.24 * float(self.sub_total)
+        instance.final_total = float(self.sub_total) + float(instance.tax_total)
+        instance.save()
+
+        return  round(instance.final_total, 2)

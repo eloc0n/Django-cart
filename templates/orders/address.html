@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}  
+<div class="row justify-content-md-center">
+    <div class="col-5">
+        <form action="" method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                {{ address_form.as_p }}
+            </div>
+            <input type="submit" class="btn btn-primary" value="Continue">
+        </form>
+    </div>
+</div>
+<!-- <a class="btn btn-primary" href="">Continue</a> -->
+
+
+{% endblock %}
