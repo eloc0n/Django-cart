@@ -40,7 +40,7 @@
 
 <span>Pre Taxes: {{ order.sub_total }}</span>
 <hr>
-<span>Taxes: {{ order.tax_total }}</span>
+<span>Taxes: {{ order.get_final_tax_amount }}</span>
 <hr>
 <h1>Total: {{ order.get_final_amount }}</h1>
 

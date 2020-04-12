@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.contrib.auth.models import User
 from django.db import models
 
@@ -30,10 +32,18 @@ class Order(models.Model):
     def __str__(self):
         return self.order_id
 
-    def get_final_amount(self):
+
+    def get_final_tax_amount(self):
         instance = Order.objects.get(id=self.id)
-        instance.tax_total = 0.24 * float(self.sub_total)
-        instance.final_total = float(self.sub_total) + float(instance.tax_total)
+        two_decimals = Decimal(10) ** -2
+        instance.tax_total = Decimal(Decimal('0.24') * Decimal(self.sub_total)).quantize(two_decimals)
         instance.save()
 
-        return  round(instance.final_total, 2)
+        return  instance.tax_total
+
+    def get_final_amount(self):
+        instance = Order.objects.get(id=self.id)
+        instance.final_total = Decimal(self.sub_total) + Decimal(instance.tax_total)
+        instance.save()
+
+        return  instance.final_total

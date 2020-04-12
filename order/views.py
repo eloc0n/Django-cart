@@ -77,6 +77,7 @@ def checkout(request):
     if new_order is not None: 
         new_order.sub_total = cart.total    # update sub_total when user leaves checkout to add more products
         new_order.save()   
+        new_order.get_final_tax_amount()    # final amount
         final_amount = new_order.get_final_amount()  # final amount with taxes included                                                   
 
     # run credit card
