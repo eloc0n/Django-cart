@@ -38,6 +38,12 @@ def address(request):
     # assign an address 
     address_form = UserAddressForm(request.POST or None) 
     if request.method == 'POST':
+        # try:
+        #     user_address = UserAddres.objects.get(user=request.user)
+        #     user_address.delete()
+        # except:
+        #     user_address = None
+
         if address_form.is_valid:
             new_address = address_form.save(commit=False)
             new_address.user = request.user
@@ -60,11 +66,16 @@ def checkout(request):
         the_id = None
         return HttpResponseRedirect(reverse('cart'))
     
+    user_address = UserAddres.objects.last() # Not secure, user can redirect to checkout through url without
+                                            # saving/creating address and the latest address 
+                                            # in queryset gets assigned instead (might be from previous users)
+   
     try:
-        new_order = Order.objects.get(cart=cart)
+        new_order = Order.objects.get(cart=cart, address=user_address)
     except Order.DoesNotExist:
         new_order = Order()
         new_order.cart = cart
+        new_order.address = user_address
         new_order.user = request.user   # assign user to the order
         new_order.order_id = id_generator() 
         new_order.save()
@@ -80,19 +91,27 @@ def checkout(request):
         new_order.get_final_tax_amount()    # final amount
         final_amount = new_order.get_final_amount()  # final amount with taxes included                                                   
 
+    
+        
+
     # run credit card
     if request.method == 'POST':
         try:
             user_stripe = request.user.userstripe.stripe_id
             customer = stripe.Customer.retrieve(user_stripe)
-            print(customer)
         except:
             customer = None
+
         if customer is not None:
             token = request.POST['stripeToken']
-            print(token)
             card = stripe.Customer.create_source(customer.id, source=token)
-            print(card)
+            card.address_city = user_address.city
+            card.address_line1 = user_address.address
+            card.address_line2 = user_address.address2
+            card.address_country = user_address.country
+            card.address_zip = user_address.zipcode
+            card.save()
+           
             charge = stripe.Charge.create(
                 amount= int(final_amount * 100),
                 currency="eur",
@@ -100,7 +119,6 @@ def checkout(request):
                 customer=customer.id,
                 description="My First Test Charge %s" %(request.user.username),
             )
-            print(charge)
 
             if charge['captured']:
                 new_order.status = 'Finished'
@@ -109,9 +127,9 @@ def checkout(request):
                 del request.session['items_total']
                 # order success message
         
-                return HttpResponseRedirect(reverse('user_orders'))      
+                return HttpResponseRedirect(reverse('user_orders'))
+    
 
-       
     context = {
         'order':new_order,
         'stripe_pub':stripe_pub,

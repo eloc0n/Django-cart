@@ -4,6 +4,7 @@ from django.db import models
 # Create your models here.
 
 class UserAddres(models.Model):
+    # order = models.CharField(max_length=120)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     address = models.CharField(max_length=120)
     address2 = models.CharField(max_length=120, null=True, blank=True)
@@ -19,7 +20,7 @@ class UserAddres(models.Model):
     
 
     def __str__(self):
-        return str(self.user.username)
+        return "%s, %s, %s, %s, %s " %(self.address, self.city, self.country, self.zipcode, self.user.username)
 
 
 

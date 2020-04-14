@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from django.contrib.auth.models import User
 from django.db import models
-
+from account.models import UserAddres
 from shopping_cart.models import Cart
 
 # Create your models here.
@@ -16,11 +16,11 @@ STATUS_CHOICES = (
 
 class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
-    order_id = models.CharField(max_length=120, default='ABC', unique=True)
+    order_id = models.CharField(max_length=120, unique=True)
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
     status = models.CharField(max_length=120, choices=STATUS_CHOICES, default='Started')
     
-    # address **
+    address = models.ForeignKey(UserAddres, on_delete=models.SET_NULL, blank=True, null=True)
     
     sub_total = models.DecimalField(default=10.99, max_digits=1000, decimal_places=2)
     tax_total = models.DecimalField(default=0.00, max_digits=1000, decimal_places=2)
